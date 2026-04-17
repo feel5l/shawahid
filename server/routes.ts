@@ -743,8 +743,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Title and fileUrl are required" });
       }
 
-      if (typeof fileUrl !== "string" || (!fileUrl.startsWith("http://") && !fileUrl.startsWith("https://"))) {
-        return res.status(400).json({ message: "fileUrl must be a valid HTTP(S) URL" });
+      const isHttpUrl = typeof fileUrl === "string" && (fileUrl.startsWith("http://") || fileUrl.startsWith("https://"));
+      const isDataUrl = typeof fileUrl === "string" && fileUrl.startsWith("data:");
+
+      if (!isHttpUrl && !isDataUrl) {
+        return res.status(400).json({ message: "fileUrl must be a valid HTTP(S) URL or Data URL" });
+      }
+
+      if (isDataUrl && fileUrl.length > 3_000_000) {
+        return res.status(400).json({ message: "Data URL is too large. Use a file smaller than 2MB." });
       }
 
       const file = await storage.createNafesFile({

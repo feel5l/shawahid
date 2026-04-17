@@ -399,11 +399,14 @@ export const witnessUploadRequestSchema = z
     criteriaId: z.string().optional(),
     fileType: z.string().max(50).optional(),
     fileName: z.string().max(255).optional(),
-    fileUrl: httpUrlSchema.optional(),
+    fileUrl: z.string().optional(),
     fileData: z.string().optional(),
     link: httpUrlSchema.optional(),
   })
   .superRefine((value, ctx) => {
+    const isHttpUrl = (url: string) => url.startsWith("http://") || url.startsWith("https://");
+    const isDataUrl = (url: string) => url.startsWith("data:");
+
     const maybeFileUrl = value.fileUrl ?? value.fileData;
 
     if (!maybeFileUrl && !value.link) {
@@ -414,18 +417,35 @@ export const witnessUploadRequestSchema = z
       return;
     }
 
-    if (value.fileData?.startsWith("data:")) {
+    if (value.fileUrl && !isHttpUrl(value.fileUrl) && !isDataUrl(value.fileUrl)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "رفع Base64 غير مدعوم. ارفع الملف للتخزين السحابي ثم أرسل fileUrl",
+        message: "fileUrl يجب أن يكون رابط HTTP(S) أو Data URL صالح",
+        path: ["fileUrl"],
+      });
+    }
+
+    if (value.fileData && !isHttpUrl(value.fileData) && !isDataUrl(value.fileData)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "fileData يجب أن يكون رابط HTTP(S) أو Data URL صالح",
         path: ["fileData"],
       });
     }
 
-    if (value.fileData && !value.fileData.startsWith("http://") && !value.fileData.startsWith("https://")) {
+    // Keep request payload within practical bounds when falling back to data URLs.
+    if (value.fileUrl?.startsWith("data:") && value.fileUrl.length > 3_000_000) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "fileData يجب أن يكون رابط URL صالح",
+        message: "الملف كبير جدًا للرفع المباشر. استخدم ملفًا أصغر من 2MB",
+        path: ["fileUrl"],
+      });
+    }
+
+    if (value.fileData?.startsWith("data:") && value.fileData.length > 3_000_000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "الملف كبير جدًا للرفع المباشر. استخدم ملفًا أصغر من 2MB",
         path: ["fileData"],
       });
     }
