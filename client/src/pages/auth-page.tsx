@@ -9,12 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ShieldCheck, User, Crown } from "lucide-react";
 
 const loginSchema = z.object({
-  nationalId: z.string().min(10, "رقم الهوية يجب أن يكون 10 أرقام"),
-  mobileNumber: z.string().min(10, "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام"),
+  nationalId: z.string().regex(/^[12]\d{9}$/, "رقم الهوية يجب أن يتكون من 10 أرقام ويبدأ بـ 1 أو 2"),
+  mobileNumber: z.string().regex(/^05\d{8}$/, "رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام"),
 });
 
 const registerSchema = loginSchema.extend({
@@ -27,6 +27,34 @@ const passwordSchema = z.object({
 
 type RoleTab = "teacher" | "admin" | "creator";
 
+function normalizeDigits(value: string) {
+  const arabicIndic = "٠١٢٣٤٥٦٧٨٩";
+  const easternArabicIndic = "۰۱۲۳۴۵۶۷۸۹";
+  return value
+    .split("")
+    .map((ch) => {
+      const idx1 = arabicIndic.indexOf(ch);
+      if (idx1 > -1) return String(idx1);
+      const idx2 = easternArabicIndic.indexOf(ch);
+      if (idx2 > -1) return String(idx2);
+      return ch;
+    })
+    .join("");
+}
+
+function normalizeTeacherCredentials(data: { nationalId: string; mobileNumber: string }) {
+  return {
+    nationalId: normalizeDigits(data.nationalId).replace(/\s+/g, "").trim(),
+    mobileNumber: normalizeDigits(data.mobileNumber).replace(/\s+/g, "").trim(),
+  };
+}
+
+function extractErrorMessage(err: unknown, fallback: string) {
+  const raw = err instanceof Error ? err.message : String(err || "");
+  const withoutStatus = raw.replace(/^\d{3}:\s*/, "").trim();
+  return withoutStatus || fallback;
+}
+
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { loginMutation, registerMutation, adminLoginMutation, creatorLoginMutation, user } = useAuth();
@@ -34,9 +62,11 @@ export default function AuthPage() {
   const [activeRole, setActiveRole] = useState<RoleTab>("teacher");
   const [teacherTab, setTeacherTab] = useState<"login" | "register">("login");
 
-  if (user) {
-    setLocation("/home");
-  }
+  useEffect(() => {
+    if (user) {
+      setLocation("/home");
+    }
+  }, [user, setLocation]);
 
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
@@ -59,11 +89,12 @@ export default function AuthPage() {
   });
 
   const onLoginSubmit = (data: z.infer<typeof loginSchema>) => {
-    loginMutation.mutate(data, {
+    const payload = normalizeTeacherCredentials(data);
+    loginMutation.mutate(payload, {
       onError: (err: any) => {
         toast({
           title: "فشل الدخول",
-          description: err.message || "تأكد من رقم الهوية ورقم الجوال",
+          description: extractErrorMessage(err, "تأكد من رقم الهوية ورقم الجوال"),
           variant: "destructive"
         });
       }
@@ -71,11 +102,15 @@ export default function AuthPage() {
   };
 
   const onRegisterSubmit = (data: z.infer<typeof registerSchema>) => {
-    registerMutation.mutate(data, {
+    const payload = {
+      ...normalizeTeacherCredentials(data),
+      fullNameArabic: data.fullNameArabic.trim(),
+    };
+    registerMutation.mutate(payload, {
       onError: (err: any) => {
         toast({
           title: "فشل التسجيل",
-          description: err.message || "قد يكون الحساب مسجلاً مسبقاً",
+          description: extractErrorMessage(err, "قد يكون الحساب مسجلاً مسبقاً"),
           variant: "destructive"
         });
       }
@@ -83,11 +118,11 @@ export default function AuthPage() {
   };
 
   const onAdminSubmit = (data: z.infer<typeof passwordSchema>) => {
-    adminLoginMutation.mutate(data, {
+    adminLoginMutation.mutate({ password: data.password.trim() }, {
       onError: (err: any) => {
         toast({
           title: "فشل الدخول",
-          description: err.message || "الرقم السري غير صحيح",
+          description: extractErrorMessage(err, "الرقم السري غير صحيح"),
           variant: "destructive"
         });
       }
@@ -95,11 +130,11 @@ export default function AuthPage() {
   };
 
   const onCreatorSubmit = (data: z.infer<typeof passwordSchema>) => {
-    creatorLoginMutation.mutate(data, {
+    creatorLoginMutation.mutate({ password: data.password.trim() }, {
       onError: (err: any) => {
         toast({
           title: "فشل الدخول",
-          description: err.message || "الرقم السري غير صحيح",
+          description: extractErrorMessage(err, "الرقم السري غير صحيح"),
           variant: "destructive"
         });
       }
@@ -119,8 +154,8 @@ export default function AuthPage() {
             <button
               onClick={() => setActiveRole("teacher")}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${activeRole === "teacher"
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
             >
               <User className="w-4 h-4" />
@@ -129,8 +164,8 @@ export default function AuthPage() {
             <button
               onClick={() => setActiveRole("admin")}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${activeRole === "admin"
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200 scale-105"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
             >
               <ShieldCheck className="w-4 h-4" />
@@ -139,8 +174,8 @@ export default function AuthPage() {
             <button
               onClick={() => setActiveRole("creator")}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${activeRole === "creator"
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-200 scale-105"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-purple-600 text-white shadow-lg shadow-purple-200 scale-105"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
             >
               <Crown className="w-4 h-4" />
@@ -156,6 +191,9 @@ export default function AuthPage() {
                   <TabsTrigger value="login" className="font-cairo text-base">تسجيل الدخول</TabsTrigger>
                   <TabsTrigger value="register" className="font-cairo text-base">حساب جديد</TabsTrigger>
                 </TabsList>
+                <p className="text-xs text-gray-500 mb-4 text-right">
+                  ملاحظة: يمكنك كتابة الأرقام بالعربية أو الإنجليزية، وسيتم تحويلها تلقائياً.
+                </p>
 
                 <TabsContent value="login">
                   <Form {...loginForm}>
