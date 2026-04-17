@@ -697,6 +697,8 @@ export class DatabaseStorage implements IStorage {
       return; // User already has indicators, don't seed
     }
 
+    const activeCycle = await CycleService.getActiveCycle();
+
     const defaultIndicators = [
       {
         title: "أداء الواجبات الوظيفية",
@@ -829,6 +831,7 @@ export class DatabaseStorage implements IStorage {
         status: "pending",
         witnessCount: 0,
         userId: userId,
+        academicCycleId: activeCycle.id,
         order: i + 1,
         weight: indicatorData.weight,
         performanceStandardId: standardId
