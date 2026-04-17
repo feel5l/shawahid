@@ -52,6 +52,14 @@ function EvidenceUploadPanel({
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
+    const resolveFileType = (selected: File | null) => {
+        if (!selected) return "unknown";
+        if (selected.type.startsWith("image/")) return "image";
+        if (selected.type === "application/pdf") return "pdf";
+        if (selected.type.startsWith("video/")) return "video";
+        return "document";
+    };
+
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             const original = e.target.files[0];
@@ -77,10 +85,15 @@ function EvidenceUploadPanel({
 
             const payload = {
                 title: evidenceName,
-                fileType: uploadType === "file" ? (file ? file.type.split("/")[1] : "unknown") : "link",
-                fileName: uploadType === "file" ? (file?.name || "witness") : "link",
-                fileUrl: uploadType === "file" ? uploadedFileUrl : null,
-                link: uploadType === "link" ? link : null,
+                fileType: uploadType === "file" ? resolveFileType(file) : "link",
+                ...(uploadType === "file" && uploadedFileUrl ? {
+                    fileName: file?.name || "witness",
+                    fileUrl: uploadedFileUrl,
+                } : {}),
+                ...(uploadType === "link" && link.trim() ? {
+                    link: link.trim(),
+                    fileName: "link",
+                } : {}),
             };
             await apiRequest("POST", `/api/standards/${standardId}/witnesses`, payload);
         },
