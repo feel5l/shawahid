@@ -86,6 +86,8 @@ const getIndicatorIcon = (title: string): React.ReactNode => {
   return <Award className="h-6 w-6" />;
 };
 
+const formatPercent = (value: number) => `${value}%`;
+
 export default function PrincipalDashboard() {
   const { toast } = useToast();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -642,7 +644,7 @@ export default function PrincipalDashboard() {
                             <div className="mb-4">
                               <div className="flex items-center justify-between mb-1.5">
                                 <span className="text-xs text-muted-foreground">{sigCompleted} / {sigCriteria.length} بند إنجاز</span>
-                                <span className={`text-xs font-bold ${sigPct === 100 ? "text-green-600" : "text-muted-foreground"}`}>{sigPct}%</span>
+                                <span className={`text-xs font-bold ${sigPct === 100 ? "text-green-600" : "text-muted-foreground"}`} dir="ltr">{formatPercent(sigPct)}</span>
                               </div>
                               <Progress value={sigPct} className="h-2" />
                             </div>
@@ -743,12 +745,12 @@ export default function PrincipalDashboard() {
                               <div className="mt-2 space-y-1.5">
                                 <div className="flex items-center justify-between text-xs">
                                   <span className="text-muted-foreground">نسبة الإنجاز</span>
-                                  <span className="font-semibold">{getTeacherCompletionPct(teacher)}%</span>
+                                  <span className="font-semibold" dir="ltr">{formatPercent(getTeacherCompletionPct(teacher))}</span>
                                 </div>
                                 <Progress value={getTeacherCompletionPct(teacher)} className="h-1.5" />
                                 <div className="flex items-center justify-between text-xs">
                                   <span className="text-muted-foreground">نسبة الاعتماد</span>
-                                  <span className="font-semibold text-green-700 dark:text-green-400">{getTeacherApprovalPct(teacher)}%</span>
+                                  <span className="font-semibold text-green-700 dark:text-green-400" dir="ltr">{formatPercent(getTeacherApprovalPct(teacher))}</span>
                                 </div>
                                 <Progress value={getTeacherApprovalPct(teacher)} className="h-1.5" />
                               </div>
@@ -808,8 +810,8 @@ export default function PrincipalDashboard() {
                       : "اختر معلماً لعرض معاييره"}
                     {selectedTeacher && (
                       <>
-                        <Badge variant="secondary">إنجاز {getTeacherCompletionPct(selectedTeacher)}%</Badge>
-                        <Badge className="bg-green-100 text-green-700 border-green-200">اعتماد {getTeacherApprovalPct(selectedTeacher)}%</Badge>
+                        <Badge variant="secondary">إنجاز <span dir="ltr" className="inline-block">{formatPercent(getTeacherCompletionPct(selectedTeacher))}</span></Badge>
+                        <Badge className="bg-green-100 text-green-700 border-green-200">اعتماد <span dir="ltr" className="inline-block">{formatPercent(getTeacherApprovalPct(selectedTeacher))}</span></Badge>
                       </>
                     )}
                   </CardTitle>
@@ -872,7 +874,7 @@ export default function PrincipalDashboard() {
                                         <h4 className="font-bold text-sm leading-tight line-clamp-2 mb-1" data-testid={`text-indicator-title-${indicator.id}`}>{indicator.title}</h4>
                                         <div className="flex items-center gap-2 flex-wrap">
                                           {indicator.weight ? (
-                                            <Badge variant="secondary" className="text-xs">{indicator.weight}%</Badge>
+                                            <Badge variant="secondary" className="text-xs"><span dir="ltr" className="inline-block">{formatPercent(indicator.weight)}</span></Badge>
                                           ) : null}
                                           {getStatusBadge(indicator.status || "pending")}
                                         </div>
@@ -882,7 +884,7 @@ export default function PrincipalDashboard() {
                                     <div className="mb-4">
                                       <div className="flex items-center justify-between mb-1.5">
                                         <span className="text-xs text-muted-foreground">{completedCriteria} / {totalCriteria} بند إنجاز</span>
-                                        <span className={`text-xs font-bold ${pct === 100 ? "text-green-600" : "text-muted-foreground"}`}>{pct}%</span>
+                                        <span className={`text-xs font-bold ${pct === 100 ? "text-green-600" : "text-muted-foreground"}`} dir="ltr">{formatPercent(pct)}</span>
                                       </div>
                                       <Progress value={pct} className="h-2" />
                                     </div>
