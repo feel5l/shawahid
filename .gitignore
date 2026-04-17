@@ -9,3 +9,12 @@ vite.config.ts.*
 .env
 .env.*
 !.env.example
+
+# Test and coverage artifacts
+coverage
+.nyc_output
+
+# Python virtual env and caches (for helper scripts)
+.venv
+__pycache__
+.pytest_cache
