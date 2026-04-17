@@ -74,6 +74,14 @@ export function WitnessUploadModal({ indicatorId, indicatorTitle, isOpen, onClos
     }
   };
 
+  const resolveFileType = (selected: File | null) => {
+    if (!selected) return "unknown";
+    if (selected.type.startsWith("image/")) return "image";
+    if (selected.type === "application/pdf") return "pdf";
+    if (selected.type.startsWith("video/")) return "video";
+    return "document";
+  };
+
   const mutation = useMutation({
     mutationFn: async () => {
       let uploadedFileUrl: string | undefined;
@@ -86,11 +94,14 @@ export function WitnessUploadModal({ indicatorId, indicatorTitle, isOpen, onClos
       const payload = {
         title: witnessName || "شاهد جديد",
         description: witnessName,
-        indicatorId,
-        fileType: uploadType === "file" ? (file ? file.type.split('/')[1] : 'unknown') : 'link',
-        fileName: uploadType === "file" ? (file ? file.name : 'witness') : 'link',
-        fileUrl: uploadType === "file" ? uploadedFileUrl : null,
-        link: uploadType === "link" ? link : null,
+        fileType: uploadType === "file" ? resolveFileType(file) : "link",
+        ...(uploadType === "file" && uploadedFileUrl ? {
+          fileName: file?.name || "witness",
+          fileUrl: uploadedFileUrl,
+        } : {}),
+        ...(uploadType === "link" && link.trim() ? {
+          link: link.trim(),
+        } : {}),
       };
 
       await apiRequest("POST", `/api/indicators/${indicatorId}/witnesses`, payload);

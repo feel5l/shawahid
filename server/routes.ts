@@ -168,9 +168,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         adminUser = (await storage.updateUser(adminUser.id, { password: passwordHash })) ?? adminUser;
       }
 
-      const passwordMatches = adminUser.password
+      const hashMatches = adminUser.password
         ? await verifyPassword(password, adminUser.password)
-        : password === adminPassword;
+        : false;
+      const envMatches = password === adminPassword;
+      const passwordMatches = hashMatches || envMatches;
+
+      if (passwordMatches && envMatches && !hashMatches) {
+        const passwordHash = await hashPassword(adminPassword);
+        adminUser = (await storage.updateUser(adminUser.id, { password: passwordHash })) ?? adminUser;
+      }
 
       if (!passwordMatches) {
         return res.status(401).json({ message: "الرقم السري غير صحيح" });
@@ -216,9 +223,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         creatorUser = (await storage.updateUser(creatorUser.id, { password: passwordHash })) ?? creatorUser;
       }
 
-      const passwordMatches = creatorUser.password
+      const hashMatches = creatorUser.password
         ? await verifyPassword(password, creatorUser.password)
-        : password === creatorPassword;
+        : false;
+      const envMatches = password === creatorPassword;
+      const passwordMatches = hashMatches || envMatches;
+
+      if (passwordMatches && envMatches && !hashMatches) {
+        const passwordHash = await hashPassword(creatorPassword);
+        creatorUser = (await storage.updateUser(creatorUser.id, { password: passwordHash })) ?? creatorUser;
+      }
 
       if (!passwordMatches) {
         return res.status(401).json({ message: "الرقم السري غير صحيح" });
