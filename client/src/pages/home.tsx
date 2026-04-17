@@ -449,7 +449,11 @@ export default function Home() {
             )}
             {isValid && <CheckCircle2 className="h-4 w-4 text-green-500" />}
             <span className="text-sm font-medium">
-              {isValid ? "مجموع الأوزان مكتمل" : `مجموع الأوزان: ${totalWeight}% من 100%`}
+              {isValid ? "مجموع الأوزان مكتمل" : (
+                <>
+                  مجموع الأوزان: <span dir="ltr" className="inline-block">{formatPercent(totalWeight)}</span> من <span dir="ltr" className="inline-block">100%</span>
+                </>
+              )}
             </span>
           </div>
           <Badge variant={isValid ? "default" : "secondary"} className={isValid ? "bg-green-600" : ""}>
