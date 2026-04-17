@@ -436,6 +436,8 @@ export default function Home() {
     ? Math.round((currentStats.completedIndicators / currentStats.totalIndicators) * 100)
     : 0;
 
+  const formatPercent = (value: number) => `${value}%`;
+
   const renderWeightBar = (totalWeight: number, label: string) => {
     const isValid = totalWeight === 100;
     return (
@@ -451,7 +453,7 @@ export default function Home() {
             </span>
           </div>
           <Badge variant={isValid ? "default" : "secondary"} className={isValid ? "bg-green-600" : ""}>
-            {totalWeight}%
+            <span dir="ltr" className="inline-block">{formatPercent(totalWeight)}</span>
           </Badge>
         </div>
         <Progress value={Math.min(totalWeight, 100)} className="h-2" />
@@ -552,7 +554,7 @@ export default function Home() {
                       </h3>
                       <div className="flex items-center gap-2 flex-wrap">
                         {(indicator.weight || indicator.performanceStandard?.weight) ? (
-                          <Badge variant="secondary" className="text-xs">{indicator.weight || indicator.performanceStandard?.weight}%</Badge>
+                          <Badge variant="secondary" className="text-xs"><span dir="ltr" className="inline-block">{formatPercent(indicator.weight || Number(indicator.performanceStandard?.weight) || 0)}</span></Badge>
                         ) : null}
                         {indicator.domain && (
                           <Badge variant="outline" className="text-xs">{domainLabels[indicator.domain] || indicator.domain}</Badge>
@@ -567,7 +569,7 @@ export default function Home() {
                         {completedCriteria} / {totalCriteria} بند إنجاز
                       </span>
                       <span className={`text-xs font-bold ${completionPct === 100 ? "text-green-600" : "text-muted-foreground"}`}>
-                        {completionPct}%
+                        <span dir="ltr" className="inline-block">{formatPercent(completionPct)}</span>
                       </span>
                     </div>
                     <Progress value={completionPct} className="h-2" />
@@ -696,7 +698,7 @@ export default function Home() {
                         <Badge variant={indicator.status === "completed" ? "default" : "secondary"}>
                           {indicator.status === "completed" ? "مكتمل" : indicator.status === "in_progress" ? "قيد التنفيذ" : "غير مكتمل"}
                         </Badge>
-                        {(indicator.weight || indicator.performanceStandard?.weight) ? <Badge variant="outline">{indicator.weight || indicator.performanceStandard?.weight}%</Badge> : null}
+                        {(indicator.weight || indicator.performanceStandard?.weight) ? <Badge variant="outline"><span dir="ltr" className="inline-block">{formatPercent(indicator.weight || Number(indicator.performanceStandard?.weight) || 0)}</span></Badge> : null}
                         {indicator.targetOutput && (
                           <span className="text-xs text-muted-foreground">المخرج: {indicator.targetOutput}</span>
                         )}
@@ -707,7 +709,7 @@ export default function Home() {
                   <div className="mb-6 p-4 bg-muted/20 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">نسبة إنجاز بنود الأداء</span>
-                      <span className="text-sm font-bold">{completionPct}%</span>
+                      <span className="text-sm font-bold" dir="ltr">{formatPercent(completionPct)}</span>
                     </div>
                     <Progress value={completionPct} className="h-3" />
                   </div>
@@ -880,7 +882,7 @@ export default function Home() {
               </div>
               <div className="w-px h-12 bg-white/20 hidden md:block"></div>
               <div className="text-center">
-                <div className="text-4xl font-extrabold">{completionPercentage}%</div>
+                <div className="text-4xl font-extrabold" dir="ltr">{formatPercent(completionPercentage)}</div>
                 <div className="text-sm text-white/80 mt-1">نسبة الإنجاز</div>
               </div>
             </div>
