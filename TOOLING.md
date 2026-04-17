@@ -32,6 +32,16 @@
 - `Build & Deploy to GitHub Pages`:
   - Workflow نشر منفصل
 
+## قوالب التعاون على GitHub
+
+- Pull Request template: `.github/PULL_REQUEST_TEMPLATE.md`
+- Issue templates:
+  - `.github/ISSUE_TEMPLATE/bug_report.md`
+  - `.github/ISSUE_TEMPLATE/feature_request.md`
+  - `.github/ISSUE_TEMPLATE/config.yml`
+
+تساعد هذه القوالب الوكلاء على توحيد وصف التغييرات، التحقق قبل الدمج، وتوثيق الأثر على الإنتاج.
+
 ## مهام شائعة للوكلاء
 
 1. تشغيل سريع بعد سحب المستودع:

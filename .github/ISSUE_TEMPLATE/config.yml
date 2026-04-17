@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project guide
+    url: https://github.com/feel5l/shawahid/blob/main/README.md
+    about: Read project setup and usage instructions.
+  - name: Agent onboarding guide
+    url: https://github.com/feel5l/shawahid/blob/main/AGENT_GUIDE.md
+    about: Read this first before opening implementation issues.
