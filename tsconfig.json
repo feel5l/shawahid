@@ -24,6 +24,7 @@
     ],
     "jsx": "preserve",
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
@@ -38,6 +39,9 @@
       ],
       "@shared/*": [
         "./shared/*"
+      ],
+      "@assets/*": [
+        "./attached_assets/*"
       ]
     }
   }
