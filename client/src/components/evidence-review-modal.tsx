@@ -9,7 +9,8 @@ import { useEffect, useState } from "react";
 interface EvidenceReviewModalProps {
   indicatorTitle: string;
   teacherName: string;
-  fileUrl: string;
+  fileUrl?: string;
+  externalLink?: string;
   isOpen: boolean;
   onClose: () => void;
   onApprove: () => void;
@@ -20,6 +21,7 @@ export function EvidenceReviewModal({
   indicatorTitle,
   teacherName,
   fileUrl,
+  externalLink,
   isOpen,
   onClose,
   onApprove,
@@ -37,8 +39,11 @@ export function EvidenceReviewModal({
     : PERFORMANCE_STANDARDS;
 
   const standard = standards.find(s => indicatorTitle.includes(s.title)) || standards[0];
-  const isImage = fileUrl.match(/\.(jpg|jpeg|png|gif)$/i) || fileUrl.startsWith('data:image/');
-  const isPdf = fileUrl.match(/\.pdf$/i) || fileUrl.startsWith('data:application/pdf');
+  const previewUrl = (fileUrl || "").trim();
+  const linkUrl = (externalLink || "").trim();
+  const openableUrl = previewUrl || linkUrl;
+  const isImage = !!previewUrl && (previewUrl.match(/\.(jpg|jpeg|png|gif)$/i) || previewUrl.startsWith("data:image/"));
+  const isPdf = !!previewUrl && (previewUrl.match(/\.pdf$/i) || previewUrl.startsWith("data:application/pdf"));
 
   useEffect(() => {
     if (!isOpen) {
@@ -61,7 +66,12 @@ export function EvidenceReviewModal({
                 variant="outline"
                 size="sm"
                 className="gap-2"
-                onClick={() => window.open(fileUrl, '_blank')}
+                disabled={!openableUrl}
+                onClick={() => {
+                  if (openableUrl) {
+                    window.open(openableUrl, "_blank");
+                  }
+                }}
               >
                 <Download className="h-4 w-4" />
                 تحميل
@@ -111,15 +121,22 @@ export function EvidenceReviewModal({
           {/* Right Side: File Preview */}
           <div className="lg:col-span-2 bg-accent/20 flex items-center justify-center p-4 overflow-hidden">
             {isImage ? (
-              <img src={fileUrl} alt="Evidence" className="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
+              <img src={previewUrl} alt="Evidence" className="max-w-full max-h-full object-contain rounded-lg shadow-lg" />
             ) : isPdf ? (
-              <iframe src={fileUrl} className="w-full h-full rounded-lg shadow-lg" title="PDF Preview" />
+              <iframe src={previewUrl} className="w-full h-full rounded-lg shadow-lg" title="PDF Preview" />
+            ) : linkUrl ? (
+              <div className="text-center p-12 bg-background rounded-2xl shadow-sm border">
+                <FileText className="h-24 w-24 mx-auto text-muted-foreground mb-4 opacity-20" />
+                <p className="font-bold">رابط خارجي للشاهد</p>
+                <p className="text-sm text-muted-foreground mb-4">هذا الشاهد مرفوع كرابط ويمكن فتحه في تبويب جديد</p>
+                <Button variant="outline" onClick={() => window.open(linkUrl, "_blank")}>فتح الرابط</Button>
+              </div>
             ) : (
               <div className="text-center p-12 bg-background rounded-2xl shadow-sm border">
                 <File className="h-24 w-24 mx-auto text-muted-foreground mb-4 opacity-20" />
                 <p className="font-bold">معاينة غير متاحة</p>
                 <p className="text-sm text-muted-foreground mb-4">هذا النوع من الملفات لا يدعم المعاينة المباشرة</p>
-                <Button variant="outline" onClick={() => window.open(fileUrl, '_blank')}>تحميل الملف للمعاينة</Button>
+                <Button variant="outline" disabled={!openableUrl} onClick={() => openableUrl && window.open(openableUrl, "_blank")}>فتح الملف/الرابط</Button>
               </div>
             )}
           </div>

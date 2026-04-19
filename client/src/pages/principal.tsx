@@ -961,10 +961,8 @@ export default function PrincipalDashboard() {
                                                 key={witness.id}
                                                 className="overflow-visible hover-elevate cursor-pointer transition-all"
                                                 onClick={() => {
-                                                  if (witness.fileUrl) {
-                                                    setSelectedWitness(witness);
-                                                    setShowEvidenceReview(true);
-                                                  }
+                                                  setSelectedWitness(witness);
+                                                  setShowEvidenceReview(true);
                                                 }}
                                                 data-testid={`principal-witness-${witness.id}`}
                                               >
@@ -985,10 +983,8 @@ export default function PrincipalDashboard() {
                                                       style={{ backgroundColor: "#006C35" }}
                                                       onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if (witness.fileUrl) {
-                                                          setSelectedWitness(witness);
-                                                          setShowEvidenceReview(true);
-                                                        }
+                                                        setSelectedWitness(witness);
+                                                        setShowEvidenceReview(true);
                                                       }}
                                                       data-testid={`button-review-witness-${witness.id}`}
                                                     >
@@ -1000,8 +996,10 @@ export default function PrincipalDashboard() {
                                                       variant="ghost"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
+                                                        const targetUrl = witness.fileUrl || witness.link;
+                                                        if (!targetUrl) return;
                                                         const link = document.createElement("a");
-                                                        link.href = witness.fileUrl!;
+                                                        link.href = targetUrl;
                                                         link.download = witness.fileName || "شاهد";
                                                         link.click();
                                                       }}
@@ -1342,9 +1340,10 @@ export default function PrincipalDashboard() {
       <EvidenceReviewModal
         isOpen={showEvidenceReview}
         onClose={() => setShowEvidenceReview(false)}
-        indicatorTitle={selectedWitness?.indicatorId ? teacherIndicators.find(i => i.id === selectedWitness.indicatorId)?.title || "" : ""}
+        indicatorTitle={selectedWitness?.indicatorId ? teacherIndicators.find(i => i.id === selectedWitness.indicatorId)?.title || selectedWitness?.title || "" : selectedWitness?.title || ""}
         teacherName={selectedTeacher ? `${selectedTeacher.firstName} ${selectedTeacher.lastName}` : ""}
         fileUrl={selectedWitness?.fileUrl || ""}
+        externalLink={selectedWitness?.link || ""}
         onApprove={() => {
           if (selectedWitness?.id) {
             // Use direct approval API - works with or without a pending signature
