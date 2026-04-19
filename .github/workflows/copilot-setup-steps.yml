@@ -1,0 +1,23 @@
+name: "Copilot Setup Steps"
+
+# تشغيل تلقائي عند تغيير الملف، أو يدوياً من تبويب Actions
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # يجب أن يُسمَّى الـ job بالضبط `copilot-setup-steps` كي يتعرف عليه Copilot
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
